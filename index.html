@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoundVerse — O'zbekistondagi global musiqa platformasi</title>
+<meta name="description" content="SoundVerse — qo'shiqlar, san'atkorlar va albomlarni jonli ma'lumotlar asosida qidiring. O'zbek, ingliz va rus tillarida ishlaydi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f; --bg2:#0f0f17; --surface:rgba(255,255,255,0.04); --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08); --text:#f5f5f7; --text-dim:#9a9aa5; --accent:#1ed760; --accent2:#a855f7;
+  --grad:linear-gradient(135deg,#1ed760 0%,#1db954 40%,#0f9d58 100%);
+  --grad2:linear-gradient(135deg,#a855f7 0%,#6366f1 50%,#1ed760 100%);
+  --radius:18px; --shadow:0 8px 32px rgba(0,0,0,0.35); --player-h:88px;
+}
+[data-theme="light"]{
+  --bg:#f6f6f9; --bg2:#ffffff; --surface:rgba(0,0,0,0.03); --surface2:rgba(0,0,0,0.06);
+  --border:rgba(0,0,0,0.08); --text:#0e0e12; --text-dim:#5b5b66;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; transition:background .3s,color .3s; padding-bottom:var(--player-h);}
+a{text-decoration:none; color:inherit;}
+img{display:block; max-width:100%;}
+button{font-family:inherit;}
+::-webkit-scrollbar{height:8px; width:8px;}
+::-webkit-scrollbar-thumb{background:var(--surface2); border-radius:10px;}
+.container{max-width:1400px; margin:0 auto; padding:0 28px;}
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* NAV */
+.navbar{position:fixed; top:0; left:0; right:0; z-index:1000; backdrop-filter:blur(18px) saturate(180%); background:rgba(10,10,15,0.6); border-bottom:1px solid var(--border);}
+[data-theme="light"] .navbar{background:rgba(255,255,255,0.7);}
+.nav-inner{display:flex; align-items:center; gap:22px; padding:14px 28px; max-width:1400px; margin:0 auto;}
+.logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; letter-spacing:-0.5px; cursor:pointer;}
+.logo .dot{width:30px; height:30px; border-radius:9px; background:var(--grad); display:grid; place-items:center; box-shadow:0 0 18px rgba(30,215,96,0.5);}
+.logo .dot svg{width:16px; height:16px; fill:#08160d;}
+.nav-links{display:flex; gap:20px; font-size:14px; font-weight:600; color:var(--text-dim);}
+.nav-links a:hover, .nav-links a.active{color:var(--text);}
+.search-wrap{flex:1; max-width:480px; margin:0 auto; position:relative;}
+.search-box{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:30px; padding:10px 16px; transition:.2s;}
+.search-box:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px rgba(30,215,96,0.15);}
+.search-box input{background:none; border:none; outline:none; color:var(--text); flex:1; font-size:14px; font-family:inherit;}
+.search-box input::placeholder{color:var(--text-dim);}
+.icon-btn{width:18px; height:18px; opacity:.7; flex-shrink:0;}
+.mic-btn{width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--surface2); cursor:pointer; flex-shrink:0; transition:.2s;}
+.mic-btn:hover{background:var(--accent);}
+.mic-btn.listening{background:var(--accent2); animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,.5);}50%{box-shadow:0 0 0 10px rgba(168,85,247,0);}}
+.country-pick, .lang-pick{background:var(--surface); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:10px; font-size:13px; cursor:pointer;}
+.nav-right{display:flex; align-items:center; gap:12px;}
+.icon-circle{width:38px; height:38px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:grid; place-items:center; cursor:pointer; transition:.2s;}
+.icon-circle:hover{background:var(--surface2); transform:translateY(-2px);}
+.btn{padding:10px 20px; border-radius:24px; font-weight:700; font-size:14px; cursor:pointer; border:none; transition:.2s;}
+.btn-primary{background:var(--grad); color:#05140a;}
+.btn-primary:hover{transform:scale(1.04); box-shadow:0 4px 20px rgba(30,215,96,0.4);}
+.btn-ghost{background:none; border:1px solid var(--border); color:var(--text);}
+.btn-ghost:hover{background:var(--surface);}
+.hamburger{display:none; cursor:pointer;}
+
+/* HERO */
+.hero{position:relative; padding:170px 28px 80px; overflow:hidden; isolation:isolate;}
+.hero::before{content:''; position:absolute; inset:-20%; z-index:-1;
+  background:radial-gradient(circle at 15% 20%, rgba(30,215,96,0.25), transparent 45%),
+  radial-gradient(circle at 85% 15%, rgba(168,85,247,0.22), transparent 45%),
+  radial-gradient(circle at 50% 90%, rgba(99,102,241,0.18), transparent 50%);
+  filter:blur(40px); animation:drift 18s ease-in-out infinite alternate;}
+@keyframes drift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(2%,-2%) scale(1.08);}}
+.hero-inner{max-width:1400px; margin:0 auto; text-align:center;}
+.hero-tag{display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:30px; background:var(--surface); border:1px solid var(--border); font-size:13px; font-weight:600; color:var(--text-dim); margin-bottom:22px;}
+.hero-tag .pulse-dot{width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse2 2s infinite;}
+@keyframes pulse2{0%{box-shadow:0 0 0 0 rgba(30,215,96,.5);}70%{box-shadow:0 0 0 8px rgba(30,215,96,0);}}
+h1.hero-title{font-size:clamp(32px,6vw,60px); font-weight:900; line-height:1.05; letter-spacing:-1.5px; margin-bottom:18px;}
+.hero-title .grad-text{background:var(--grad2); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{font-size:17px; color:var(--text-dim); max-width:600px; margin:0 auto 30px; line-height:1.6;}
+.hero-search{max-width:600px; margin:0 auto;}
+.hero-search .search-box{padding:14px 20px; border-radius:40px;}
+.hero-chips{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:18px;}
+.hero-chips span{font-size:12.5px; padding:6px 14px; border-radius:20px; background:var(--surface); border:1px solid var(--border); cursor:pointer; color:var(--text-dim);}
+.hero-chips span:hover{color:var(--text); border-color:var(--accent);}
+
+section.block{padding:40px 0;}
+.block-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px; flex-wrap:wrap; gap:10px;}
+.block-head h2{font-size:24px; font-weight:800; letter-spacing:-0.5px;}
+.block-head p.sub{font-size:13.5px; color:var(--text-dim); margin-top:4px;}
+.filters{display:flex; gap:10px; flex-wrap:wrap;}
+.scroll-row{display:flex; gap:16px; overflow-x:auto; padding-bottom:10px; scroll-snap-type:x proximity;}
+.scroll-row::-webkit-scrollbar{display:none;}
+.grid-row{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px;}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:13px; cursor:pointer; transition:.25s; position:relative; flex-shrink:0; scroll-snap-align:start;}
+.card:hover{background:var(--surface2); transform:translateY(-5px); box-shadow:var(--shadow);}
+.card.w160{width:158px;} .card.w180{width:180px;}
+.card img.cover{width:100%; aspect-ratio:1/1; border-radius:12px; object-fit:cover; margin-bottom:10px; background:var(--surface2);}
+.card.artist img.cover{border-radius:50%;}
+.card h4{font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.card p{font-size:12px; color:var(--text-dim); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.play-fab{position:absolute; right:22px; bottom:58px; width:40px; height:40px; border-radius:50%; background:var(--grad); display:grid; place-items:center; box-shadow:0 6px 16px rgba(30,215,96,.4); opacity:0; transform:translateY(8px); transition:.25s; border:none; cursor:pointer;}
+.card:hover .play-fab{opacity:1; transform:translateY(0);}
+.play-fab svg{width:15px; height:15px; fill:#06140a;}
+.rank-num{font-size:30px; font-weight:900; color:var(--text-dim); opacity:.35; width:36px; text-align:center; flex-shrink:0;}
+.track-row{display:flex; align-items:center; gap:14px; padding:9px 12px; border-radius:12px; transition:.2s; cursor:pointer;}
+.track-row:hover{background:var(--surface);}
+.track-row.playing{background:var(--surface2);}
+.track-row img{width:44px; height:44px; border-radius:8px; object-fit:cover; background:var(--surface2);}
+.track-row .tname{font-size:13.5px; font-weight:600;}
+.track-row .tartist{font-size:11.5px; color:var(--text-dim);}
+.track-row .tinfo{flex:1; min-width:0;}
+.track-row .tdur{font-size:11.5px; color:var(--text-dim); flex-shrink:0;}
+.heart-btn{width:28px; height:28px; border-radius:50%; display:grid; place-items:center; opacity:0; transition:.2s; flex-shrink:0;}
+.track-row:hover .heart-btn{opacity:1;}
+.heart-btn svg{width:15px; height:15px; fill:none; stroke:var(--text-dim); stroke-width:2;}
+.heart-btn.active{opacity:1;}
+.heart-btn.active svg{fill:var(--accent); stroke:var(--accent);}
+.genre-tag{display:inline-block; font-size:10.5px; padding:2px 8px; border-radius:8px; background:var(--surface2); color:var(--text-dim); margin-left:6px; flex-shrink:0;}
+
+.chip-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;}
+.chip-row::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0; padding:8px 16px; border-radius:24px; background:var(--surface); border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; transition:.2s; white-space:nowrap;}
+.chip.active, .chip:hover{background:var(--grad); color:#06140a; border-color:transparent;}
+.genre-card{border-radius:16px; padding:18px; height:110px; display:flex; flex-direction:column; justify-content:space-between; font-weight:800; font-size:16px; cursor:pointer; transition:.25s; color:#fff;}
+.genre-card:hover{transform:translateY(-5px) scale(1.02);}
+.genre-card span.emoji{font-size:24px;}
+.country-card{display:flex; align-items:center; gap:14px; padding:15px; border-radius:16px; background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:.2s;}
+.country-card:hover{background:var(--surface2); transform:translateY(-3px);}
+.country-card .flag{font-size:28px;}
+.country-card h4{font-size:14.5px; font-weight:700;}
+.country-card p{font-size:11.5px; color:var(--text-dim);}
+
+.state-msg{padding:30px; text-align:center; color:var(--text-dim); font-size:14px;}
+.state-msg.error{color:#f87171;}
+
+/* PLAYER */
+.player{position:fixed; bottom:0; left:0; right:0; height:var(--player-h); z-index:1100; background:rgba(10,10,15,0.88); backdrop-filter:blur(24px) saturate(180%); border-top:1px solid var(--border); display:flex; align-items:center; padding:0 18px; gap:18px;}
+[data-theme="light"] .player{background:rgba(255,255,255,0.88);}
+.player-track{display:flex; align-items:center; gap:12px; width:250px; min-width:0;}
+.player-track img{width:54px; height:54px; border-radius:10px; object-fit:cover; background:var(--surface2);}
+.player-track .pt-meta{min-width:0;}
+.player-track .pt-meta b{font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.player-track .pt-meta span{font-size:11px; color:var(--text-dim);}
+.player-center{flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; max-width:560px; margin:0 auto;}
+.player-controls{display:flex; align-items:center; gap:18px;}
+.ctrl-btn{width:28px; height:28px; display:grid; place-items:center; cursor:pointer; opacity:.85; transition:.2s; background:none; border:none;}
+.ctrl-btn:hover{opacity:1; transform:scale(1.1);}
+.ctrl-btn svg{width:17px; height:17px; fill:var(--text);}
+.ctrl-btn.active svg{fill:var(--accent);}
+.play-main{width:36px; height:36px; border-radius:50%; background:var(--text); display:grid; place-items:center;}
+.play-main svg{fill:var(--bg); width:15px; height:15px;}
+.progress-row{display:flex; align-items:center; gap:9px; width:100%;}
+.progress-row span{font-size:10.5px; color:var(--text-dim); width:32px; text-align:center;}
+.bar{flex:1; height:4px; border-radius:4px; background:var(--surface2); position:relative; cursor:pointer;}
+.bar .fill{position:absolute; left:0; top:0; height:100%; border-radius:4px; background:var(--text); width:0%;}
+.player-right{width:220px; display:flex; align-items:center; justify-content:flex-end; gap:12px;}
+.vol-row{display:flex; align-items:center; gap:8px; width:100px;}
+.vol-row .bar{height:4px;}
+.preview-note{font-size:9.5px; color:var(--text-dim); opacity:.7;}
+@media (max-width:880px){
+  .player-track{width:auto; flex:1;} .player-right{display:none;} .player-center{display:none;}
+  .player{justify-content:space-between;} .mini-controls{display:flex; gap:14px; align-items:center;}
+}
+.mini-controls{display:none;}
+
+/* ARTIST DRAWER */
+.drawer-bg{position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1900; display:none;}
+.drawer-bg.show{display:block;}
+.artist-drawer{position:fixed; top:0; right:0; height:100%; width:min(460px,100%); background:var(--bg2); z-index:1950; transform:translateX(100%); transition:transform .35s cubic-bezier(.2,.8,.2,1); overflow-y:auto; border-left:1px solid var(--border);}
+.artist-drawer.show{transform:translateX(0);}
+.ad-cover{height:220px; position:relative; background:var(--surface2);}
+.ad-cover img{width:100%; height:100%; object-fit:cover;}
+.ad-cover .ad-grad{position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 0%, var(--bg2) 100%);}
+.ad-close{position:absolute; top:16px; right:16px; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.5); display:grid; place-items:center; cursor:pointer; z-index:2;}
+.ad-body{padding:0 24px 40px; margin-top:-44px; position:relative;}
+.ad-body h2{font-size:26px; font-weight:900;}
+.ad-flag{font-size:13.5px; color:var(--text-dim); margin:4px 0 14px;}
+.ad-sec-title{font-size:14.5px; font-weight:800; margin:20px 0 10px;}
+.album-strip{display:flex; gap:12px; overflow-x:auto;}
+.album-strip img{width:90px; height:90px; border-radius:10px; object-fit:cover; flex-shrink:0; background:var(--surface2);}
+.album-strip .al-item{width:90px; flex-shrink:0; cursor:pointer;}
+.album-strip .al-item span{font-size:11px; display:block; margin-top:5px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+.modal-bg{position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:34px; width:100%; max-width:400px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.modal h3{font-size:21px; font-weight:800; margin-bottom:6px;}
+.modal p.sub2{font-size:13px; color:var(--text-dim); margin-bottom:22px;}
+.modal .close-x{position:absolute; top:18px; right:18px; cursor:pointer; opacity:.6;}
+.field{margin-bottom:14px;}
+.field label{font-size:12px; font-weight:600; color:var(--text-dim); display:block; margin-bottom:6px;}
+.field input{width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit; font-size:14px; outline:none;}
+.field input:focus{border-color:var(--accent);}
+.modal .btn-primary{width:100%; padding:13px; margin-top:6px;}
+.modal-switch{text-align:center; font-size:12.5px; color:var(--text-dim); margin-top:16px;}
+.modal-switch b{color:var(--accent); cursor:pointer;}
+
+.toast{position:fixed; bottom:110px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--surface2); border:1px solid var(--border); backdrop-filter:blur(20px); padding:12px 22px; border-radius:30px; font-size:13px; font-weight:600; z-index:3000; opacity:0; transition:.3s; pointer-events:none; max-width:90vw; text-align:center;}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+footer{padding:50px 28px 26px; border-top:1px solid var(--border); margin-top:30px;}
+.foot-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:36px; max-width:1400px; margin:0 auto;}
+.foot-grid h5{font-size:12.5px; color:var(--text-dim); margin-bottom:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;}
+.foot-grid a, .foot-grid p{display:block; font-size:13px; color:var(--text-dim); margin-bottom:9px;}
+.foot-bottom{max-width:1400px; margin:36px auto 0; padding-top:18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); flex-wrap:wrap; gap:10px;}
+
+@media (max-width:1000px){.nav-links{display:none;} .foot-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:680px){.search-wrap{display:none;} .hamburger{display:block;} .nav-right .btn-ghost{display:none;} .hero{padding-top:130px;} h1.hero-title{font-size:32px;}}
+</style>
+</head>
+<body data-theme="dark">
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><div class="dot"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>SoundVerse</div>
+    <div class="nav-links">
+      <a href="#discover" class="active" data-i18n="nav_home">Bosh sahifa</a>
+      <a href="#charts" data-i18n="nav_charts">Top chartlar</a>
+      <a href="#genres" data-i18n="nav_genres">Janrlar</a>
+      <a href="#countries" data-i18n="nav_countries">Davlatlar</a>
+      <a href="#" onclick="showToast(t('coming_soon'))" data-i18n="nav_artists">San'atkorlar</a>
+      <a href="#" onclick="showToast(t('coming_soon'))" data-i18n="nav_albums">Albomlar</a>
+      <a href="#" onclick="showToast(t('coming_soon'))" data-i18n="nav_library">Mening kutubxonam</a>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" data-i18n-ph="search_ph" placeholder="Qo'shiq, san'atkor, albom qidiring...">
+        <div class="mic-btn" id="micBtn" title="Ovozli qidiruv">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+        </div>
+      </div>
+      <div id="searchResults" style="display:none; position:absolute; top:54px; left:0; right:0; background:var(--bg2); border:1px solid var(--border); border-radius:14px; max-height:420px; overflow-y:auto; box-shadow:var(--shadow); padding:8px; z-index:50;"></div>
+    </div>
+    <div class="nav-right">
+      <select class="lang-pick" id="navLang" title="Til / Language / Язык">
+        <option value="uz">🇺🇿 O'zbek</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="ru">🇷🇺 Русский</option>
+      </select>
+      <select class="country-pick" id="navCountry" title="Storefront / country"></select>
+      <div class="icon-circle" id="themeToggle" title="Mavzu">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+      </div>
+      <button class="btn btn-ghost" data-i18n="nav_login" onclick="openAuth('login')">Kirish</button>
+      <button class="btn btn-primary" data-i18n="nav_register" onclick="openAuth('register')">Ro'yxatdan o'tish</button>
+      <svg class="hamburger" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="hamburger"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="discover">
+  <div class="hero-inner">
+    <div class="hero-tag"><span class="pulse-dot"></span> <span data-i18n="hero_tag">Jonli ma'lumot · jahon musiqa katalogi asosida</span></div>
+    <h1 class="hero-title" data-i18n="hero_title">Chegarasiz va<br><span class="grad-text">soxtasiz musiqa.</span></h1>
+    <p class="hero-sub" data-i18n="hero_sub">Haqiqiy qo'shiqlar, haqiqiy san'atkorlar, haqiqiy chartlar — 190 dan ortiq davlat katalogi bo'yicha qidiring, jumladan o'zbek va ingliz musiqasi, va haqiqiy ovozli namunani tinglang.</p>
+    <div class="hero-search">
+      <div class="search-box">
+        <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="heroSearchInput" type="text" data-i18n-ph="hero_search_ph" placeholder="Masalan: “Yulduz Usmonova”, “lofi”, “K-pop”, “o'zbek pop”...">
+        <div class="mic-btn" id="heroMicBtn" title="Ovozli qidiruv">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+        </div>
+      </div>
+      <div class="hero-chips">
+        <span onclick="quickSearch('Uzbek pop')">🇺🇿 <span data-i18n="chip_uzpop">O'zbek pop</span></span>
+        <span onclick="quickSearch('top hits')" data-i18n="chip_tophits">🔥 Top hitlar</span>
+        <span onclick="quickSearch('k-pop')">K-pop</span>
+        <span onclick="quickSearch('lofi chill')">Lo-fi</span>
+        <span onclick="quickSearch('afrobeats')">Afrobeats</span>
+        <span onclick="quickSearch('rock')" data-i18n="chip_rock">Rok</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="block container" id="searchSection" style="display:none;">
+    <div class="block-head"><div><h2 id="searchHeading" data-i18n="search_results">Qidiruv natijalari</h2><p class="sub" id="searchSub"></p></div></div>
+    <div id="searchTracksList"></div>
+    <div class="block-head" style="margin-top:24px;"><div><h2 style="font-size:18px;" data-i18n="artists_label">San'atkorlar</h2></div></div>
+    <div class="scroll-row" id="searchArtistsRow"></div>
+    <div class="block-head" style="margin-top:24px;"><div><h2 style="font-size:18px;" data-i18n="albums_label">Albomlar</h2></div></div>
+    <div class="scroll-row" id="searchAlbumsRow"></div>
+  </section>
+
+  <section class="block container" id="charts">
+    <div class="block-head">
+      <div><h2 data-i18n="top_charts_title">📈 Top chartlar</h2><p class="sub" id="chartsSub" data-i18n="top_charts_sub">Global chart — jonli "Top qo'shiqlar"</p></div>
+      <div class="filters"><select class="country-pick" id="chartCountry"></select></div>
+    </div>
+    <div id="chartsList"><div class="state-msg" data-i18n="loading_chart">Jonli chart yuklanmoqda…</div></div>
+  </section>
+
+  <section class="block container">
+    <div class="block-head"><div><h2 data-i18n="uzbekistan_chart">🇺🇿 O'zbekiston chart</h2><p class="sub" data-i18n="uzbek_sub">O'zbek qo'shiqlari qidiruvi bo'yicha jonli ma'lumot</p></div></div>
+    <div class="scroll-row" id="uzbekRow"><div class="state-msg" data-i18n="loading">Yuklanmoqda…</div></div>
+  </section>
+
+  <section class="block container">
+    <div class="block-head"><div><h2 data-i18n="trending_music">Trenddagi musiqa</h2><p class="sub" data-i18n="trending_sub">Janrlar bo'yicha eng mashhur qidiruvlar, jonli ravishda</p></div></div>
+    <div class="scroll-row" id="trendingRow"><div class="state-msg" data-i18n="loading">Yuklanmoqda…</div></div>
+  </section>
+
+  <section class="block container" id="genres">
+    <div class="block-head"><div><h2 data-i18n="browse_genre">Janrlar bo'yicha</h2><p class="sub" data-i18n="browse_genre_sub">Janrni tanlang — haqiqiy mos qo'shiqlar yuklanadi</p></div></div>
+    <div class="grid-row" id="genreGrid"></div>
+  </section>
+
+  <section class="block container" id="countries">
+    <div class="block-head"><div><h2 data-i18n="by_country">🌍 Davlatlar bo'yicha musiqa</h2><p class="sub" data-i18n="by_country_sub">Har bir mintaqa katalogi bo'yicha jonli qidiruv</p></div></div>
+    <div class="grid-row" id="countryGrid"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="logo"><div class="dot"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>SoundVerse</div>
+      <p style="max-width:280px; line-height:1.6;" data-i18n="foot_desc">Jonli, haqiqiy katalog ma'lumotlariga asoslangan global musiqa platformasi — soxta namunalarsiz.</p>
+      <select class="lang-pick" id="langSelect" style="margin-top:10px;">
+        <option value="uz">🇺🇿 O'zbek</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="ru">🇷🇺 Русский</option>
+      </select>
+    </div>
+    <div><h5 data-i18n="foot_source">Ma'lumot manbasi</h5><p>iTunes Search API (kalit talab qilinmaydi)</p><p>iTunes Top Charts RSS</p><p id="readyKeysNote" data-i18n="foot_spotify_ready">Spotify/Last.fm kaliti uchun joy tayyor</p></div>
+    <div><h5 data-i18n="foot_company">Kompaniya</h5><a href="#" data-i18n="foot_about">Biz haqimizda</a><a href="#" data-i18n="foot_careers">Karyera</a><a href="#" data-i18n="foot_contact">Aloqa</a></div>
+    <div><h5 data-i18n="foot_links">Havolalar</h5><a href="#" data-i18n="foot_support">Yordam</a><a href="#" data-i18n="foot_privacy">Maxfiylik</a><a href="#" data-i18n="foot_for_artists">San'atkorlar uchun</a></div>
+  </div>
+  <div class="foot-bottom"><span>© 2026 SoundVerse Inc.</span><span data-i18n="foot_tagline">Haqiqiy musiqa ma'lumotlari, butun dunyo bo'yicha.</span></div>
+</footer>
+
+<div class="player">
+  <div class="player-track">
+    <img id="pImg" src="" alt="">
+    <div class="pt-meta"><b id="pTitle" data-i18n="player_default_title">Tinglashni boshlash uchun qidiring</b><span id="pArtist">SoundVerse</span></div>
+    <div class="heart-btn" id="favBtn" onclick="toggleFav()"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C0.5 8 2 4 6 4c2 0 3.5 1 6 3.5C14.5 5 16 4 18 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+  </div>
+  <div class="player-center">
+    <div class="player-controls">
+      <button class="ctrl-btn" id="shuffleBtn" onclick="toggleShuffle()" title="Aralashtirish"><svg viewBox="0 0 24 24"><path d="M4 4l4 0 9 12 4 0v2h-5l-9-12H4V4zm0 16v-2h3l1.5-2 1.3 1.7L8.5 20H4zm16-12l3 3-3 3v-2h-3l-1.5 2-1.3-1.7L15.5 10H20V8z"/></svg></button>
+      <button class="ctrl-btn" onclick="prevTrack()" title="Oldingi"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM10 12l9-6v12z"/></svg></button>
+      <button class="ctrl-btn play-main" id="playBtn" onclick="togglePlay()" title="Ijro etish / To'xtatish"><svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="ctrl-btn" onclick="nextTrack()" title="Keyingi"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l9 6-9 6z"/></svg></button>
+      <button class="ctrl-btn" id="repeatBtn" onclick="toggleRepeat()" title="Takrorlash"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg></button>
+    </div>
+    <div class="progress-row">
+      <span id="curTime">0:00</span>
+      <div class="bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+      <span id="durTime">0:30</span>
+    </div>
+  </div>
+  <div class="player-right">
+    <span class="preview-note" data-i18n="preview_note">30 soniyalik namuna</span>
+    <div class="vol-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>
+      <div class="bar" id="volBar"><div class="fill" id="volFill" style="width:70%;"></div></div>
+    </div>
+  </div>
+  <div class="mini-controls">
+    <button class="ctrl-btn" onclick="prevTrack()"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM10 12l9-6v12z"/></svg></button>
+    <button class="ctrl-btn play-main" onclick="togglePlay()"><svg viewBox="0 0 24 24" id="playIconMini"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="ctrl-btn" onclick="nextTrack()"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l9 6-9 6z"/></svg></button>
+  </div>
+</div>
+<audio id="audioEl" preload="none"></audio>
+
+<div class="modal-bg" id="authModal">
+  <div class="modal">
+    <div class="close-x" onclick="closeAuth()">✕</div>
+    <h3 id="authTitle" data-i18n="auth_login_title">Xush kelibsiz</h3>
+    <p class="sub2" id="authSub" data-i18n="auth_login_sub">Sevimlilar va pleylistlarni saqlash uchun kiring</p>
+    <div class="field"><label data-i18n="auth_email">Email</label><input type="email" placeholder="siz@misol.com"></div>
+    <div class="field" id="nameField" style="display:none;"><label data-i18n="auth_fullname">To'liq ism</label><input type="text" placeholder="Ismingiz"></div>
+    <div class="field"><label data-i18n="auth_password">Parol</label><input type="password" placeholder="••••••••"></div>
+    <button class="btn btn-primary" data-i18n="auth_continue" onclick="submitAuth()">Davom etish</button>
+    <p class="modal-switch" id="authSwitch">Hisobingiz yo'qmi? <b onclick="openAuth('register')" data-i18n="auth_signup_link">Ro'yxatdan o'tish</b></p>
+  </div>
+</div>
+
+<div class="drawer-bg" id="drawerBg" onclick="closeArtist()"></div>
+<div class="artist-drawer" id="artistDrawer">
+  <div class="ad-cover"><img id="adImg" src="" alt=""><div class="ad-grad"></div><div class="ad-close" onclick="closeArtist()">✕</div></div>
+  <div class="ad-body">
+    <h2 id="adName"></h2>
+    <p class="ad-flag" id="adGenre"></p>
+    <button class="btn btn-primary" style="padding:9px 20px;" data-i18n="follow_btn" onclick="showToast(t('follow_demo'))">+ Kuzatish</button>
+    <div class="ad-sec-title" data-i18n="popular_songs">Mashhur qo'shiqlar</div>
+    <div id="adSongs"><div class="state-msg" data-i18n="loading">Yuklanmoqda…</div></div>
+    <div class="ad-sec-title" data-i18n="albums_label">Albomlar</div>
+    <div class="album-strip" id="adAlbums"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Action completed</div>
+
+<script>
+/* =========================================================
+   SoundVerse — REAL DATA LAYER
+   Primary source: iTunes Search API (api.apple.com) — FREE, NO KEY REQUIRED.
+   Docs: https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/
+   Provides: real track/artist/album metadata, artwork, genre, country storefront,
+   and a genuine 30-second streamable preview (previewUrl) — not fake/dummy audio.
+
+   FUTURE KEYS: drop credentials below to upgrade to full-length streaming.
+   When SPOTIFY/LASTFM keys are present, swap the relevant fetch calls —
+   the rest of the app (UI, player, drawers) needs no changes.
+========================================================= */
+const API_KEYS = {
+  spotify_client_id: "",      // add later for full-track playback via Spotify Web Playback SDK
+  spotify_client_secret: "",
+  lastfm_api_key: ""          // add later for richer bios / scrobble-based charts
+};
+
+/* =========================================================
+   SPOTIFY NOTE: the Client Credentials flow needs the client
+   secret, which can NEVER be safely embedded in browser JS —
+   anyone can view-source and steal it. A real Spotify
+   integration needs a tiny backend/serverless proxy that holds
+   the secret and hands the frontend a short-lived token.
+   The slots above are ready; getSpotifyToken() below is a
+   stub showing exactly where that proxy call would go.
+========================================================= */
+async function getSpotifyToken(){
+  if(!API_KEYS.spotify_client_id){ return null; } // no key yet -> app keeps using iTunes (free, no key)
+  // Example once you have a backend proxy at /api/spotify-token:
+  // const res = await fetch('/api/spotify-token'); const data = await res.json(); return data.access_token;
+  return null;
+}
+
+/* ---------------- i18n ---------------- */
+let currentLang = "uz";
+const I18N = {
+  uz:{
+    nav_home:"Bosh sahifa", nav_charts:"Top chartlar", nav_genres:"Janrlar", nav_countries:"Davlatlar",
+    nav_artists:"San'atkorlar", nav_albums:"Albomlar", nav_library:"Mening kutubxonam", nav_login:"Kirish", nav_register:"Ro'yxatdan o'tish",
+    search_ph:"Qo'shiq, san'atkor, albom qidiring...", hero_search_ph:"Masalan: “Yulduz Usmonova”, “lofi”, “K-pop”, “o'zbek pop”...",
+    hero_tag:"Jonli ma'lumot · jahon musiqa katalogi asosida", hero_title:"Chegarasiz va<br><span class=\"grad-text\">soxtasiz musiqa.</span>",
+    hero_sub:"Haqiqiy qo'shiqlar, haqiqiy san'atkorlar, haqiqiy chartlar — 190 dan ortiq davlat katalogi bo'yicha qidiring, jumladan o'zbek va ingliz musiqasi.",
+    chip_uzpop:"O'zbek pop", chip_tophits:"🔥 Top hitlar", chip_rock:"Rok",
+    search_results:"Qidiruv natijalari", artists_label:"San'atkorlar", albums_label:"Albomlar",
+    top_charts_title:"📈 Top chartlar", top_charts_sub:"Global chart — jonli \"Top qo'shiqlar\"",
+    loading_chart:"Jonli chart yuklanmoqda…", uzbekistan_chart:"🇺🇿 O'zbekiston chart", uzbek_sub:"O'zbek qo'shiqlari qidiruvi bo'yicha jonli ma'lumot",
+    trending_music:"Trenddagi musiqa", trending_sub:"Janrlar bo'yicha eng mashhur qidiruvlar, jonli ravishda",
+    loading:"Yuklanmoqda…", browse_genre:"Janrlar bo'yicha", browse_genre_sub:"Janrni tanlang — haqiqiy mos qo'shiqlar yuklanadi",
+    by_country:"🌍 Davlatlar bo'yicha musiqa", by_country_sub:"Har bir mintaqa katalogi bo'yicha jonli qidiruv",
+    foot_desc:"Jonli, haqiqiy katalog ma'lumotlariga asoslangan global musiqa platformasi — soxta namunalarsiz.",
+    foot_source:"Ma'lumot manbasi", foot_spotify_ready:"Spotify/Last.fm kaliti uchun joy tayyor",
+    foot_company:"Kompaniya", foot_about:"Biz haqimizda", foot_careers:"Karyera", foot_contact:"Aloqa",
+    foot_links:"Havolalar", foot_support:"Yordam", foot_privacy:"Maxfiylik", foot_for_artists:"San'atkorlar uchun",
+    foot_tagline:"Haqiqiy musiqa ma'lumotlari, butun dunyo bo'yicha.",
+    player_default_title:"Tinglashni boshlash uchun qidiring", preview_note:"30 soniyalik namuna",
+    auth_login_title:"Xush kelibsiz", auth_login_sub:"Sevimlilar va pleylistlarni saqlash uchun kiring",
+    auth_register_title:"Hisob yarating", auth_register_sub:"SoundVerse'ga qo'shiling va haqiqiy musiqani kashf eting",
+    auth_email:"Email", auth_fullname:"To'liq ism", auth_password:"Parol", auth_continue:"Davom etish",
+    auth_signup_link:"Ro'yxatdan o'tish", auth_login_link:"Kirish",
+    follow_btn:"+ Kuzatish", popular_songs:"Mashhur qo'shiqlar",
+    toast_fav_added:"Sevimlilarga qo'shildi", toast_fav_removed:"Sevimlilardan olib tashlandi",
+    toast_no_preview:"Bu qo'shiq uchun namuna mavjud emas — boshqasini tanlang",
+    toast_search_first:"Avval qidiruv qiling va qo'shiq tanlang", toast_mic_unsupported:"Bu brauzerda ovozli qidiruv mavjud emas",
+    toast_mic_permission:"Mikrofon ruxsati kerak", toast_shuffle_on:"Aralashtirish yoqildi", toast_shuffle_off:"Aralashtirish o'chirildi",
+    toast_repeat_on:"Takrorlash yoqildi", toast_repeat_off:"Takrorlash o'chirildi", toast_theme_light:"Yorug' rejim yoqildi", toast_theme_dark:"Qorong'i rejim yoqildi",
+    toast_welcome:"SoundVerse'ga xush kelibsiz! 🎶 (kirish hozircha faqat interfeys — hisoblarni saqlash uchun backend kerak)",
+    toast_storefront:"Do'kon mintaqasi yangilandi", toast_lang_set:"Til o'zgartirildi: ", coming_soon:"Tez kunda ishga tushadi",
+    follow_demo:"San'atkorni kuzatish (demo)", toast_search_error:"Qidiruvda xatolik — internetni tekshiring"
+  },
+  en:{
+    nav_home:"Home", nav_charts:"Top Charts", nav_genres:"Genres", nav_countries:"Countries",
+    nav_artists:"Artists", nav_albums:"Albums", nav_library:"My Library", nav_login:"Log in", nav_register:"Sign up",
+    search_ph:"Search songs, artists, albums...", hero_search_ph:"Try “Yulduz Usmonova”, “lofi”, “K-pop”, “Uzbek pop”...",
+    hero_tag:"Live data · powered by the worldwide music catalog", hero_title:"Music without<br><span class=\"grad-text\">borders or fakes.</span>",
+    hero_sub:"Real songs, real artists, real charts — search across 190+ regional catalogs including Uzbek and English music.",
+    chip_uzpop:"Uzbek Pop", chip_tophits:"🔥 Top Hits", chip_rock:"Rock",
+    search_results:"Search results", artists_label:"Artists", albums_label:"Albums",
+    top_charts_title:"📈 Top Charts", top_charts_sub:"Global chart — live Top Songs",
+    loading_chart:"Loading live chart…", uzbekistan_chart:"🇺🇿 Uzbekistan Chart", uzbek_sub:"Live data for Uzbek song searches",
+    trending_music:"Trending Music", trending_sub:"The most popular live searches across genres",
+    loading:"Loading…", browse_genre:"Browse by Genre", browse_genre_sub:"Pick a genre — real matching tracks load instantly",
+    by_country:"🌍 Music by Country", by_country_sub:"Live search scoped to each region's catalog",
+    foot_desc:"A global music platform powered by live, real catalog data — no fake placeholders.",
+    foot_source:"Data Source", foot_spotify_ready:"Spotify/Last.fm key slot ready",
+    foot_company:"Company", foot_about:"About", foot_careers:"Careers", foot_contact:"Contact",
+    foot_links:"Links", foot_support:"Support", foot_privacy:"Privacy", foot_for_artists:"For Artists",
+    foot_tagline:"Real music data, worldwide.",
+    player_default_title:"Search to start listening", preview_note:"30s preview",
+    auth_login_title:"Welcome back", auth_login_sub:"Log in to save favorites and playlists",
+    auth_register_title:"Create your account", auth_register_sub:"Join SoundVerse and discover real music",
+    auth_email:"Email", auth_fullname:"Full name", auth_password:"Password", auth_continue:"Continue",
+    auth_signup_link:"Sign up", auth_login_link:"Log in",
+    follow_btn:"+ Follow", popular_songs:"Popular Songs",
+    toast_fav_added:"Added to Favorites", toast_fav_removed:"Removed from Favorites",
+    toast_no_preview:"No preview available — try another track",
+    toast_search_first:"Search and pick a track first", toast_mic_unsupported:"Voice search not supported in this browser",
+    toast_mic_permission:"Mic permission needed", toast_shuffle_on:"Shuffle on", toast_shuffle_off:"Shuffle off",
+    toast_repeat_on:"Repeat on", toast_repeat_off:"Repeat off", toast_theme_light:"Light mode on", toast_theme_dark:"Dark mode on",
+    toast_welcome:"Welcome to SoundVerse! 🎶 (auth is UI-only — connect a backend to persist accounts)",
+    toast_storefront:"Storefront updated", toast_lang_set:"Language set to ", coming_soon:"Coming soon",
+    follow_demo:"Following artist (demo)", toast_search_error:"Search error — check connection"
+  },
+  ru:{
+    nav_home:"Главная", nav_charts:"Топ чарты", nav_genres:"Жанры", nav_countries:"Страны",
+    nav_artists:"Артисты", nav_albums:"Альбомы", nav_library:"Моя библиотека", nav_login:"Войти", nav_register:"Регистрация",
+    search_ph:"Поиск песен, артистов, альбомов...", hero_search_ph:"Например: «Yulduz Usmonova», «lofi», «K-pop», «узбекская поп»...",
+    hero_tag:"Живые данные · мировой музыкальный каталог", hero_title:"Музыка без<br><span class=\"grad-text\">границ и подделок.</span>",
+    hero_sub:"Настоящие песни, настоящие артисты, настоящие чарты — поиск по 190+ региональным каталогам, включая узбекскую и английскую музыку.",
+    chip_uzpop:"Узбекская поп", chip_tophits:"🔥 Топ хиты", chip_rock:"Рок",
+    search_results:"Результаты поиска", artists_label:"Артисты", albums_label:"Альбомы",
+    top_charts_title:"📈 Топ чарты", top_charts_sub:"Глобальный чарт — живые Top Songs",
+    loading_chart:"Загрузка чарта…", uzbekistan_chart:"🇺🇿 Чарт Узбекистана", uzbek_sub:"Живые данные по узбекской музыке",
+    trending_music:"Популярное сейчас", trending_sub:"Самые популярные живые запросы по жанрам",
+    loading:"Загрузка…", browse_genre:"Обзор по жанрам", browse_genre_sub:"Выберите жанр — загрузятся настоящие треки",
+    by_country:"🌍 Музыка по странам", by_country_sub:"Живой поиск по каталогу каждого региона",
+    foot_desc:"Глобальная музыкальная платформа на основе живых, настоящих данных каталога — без подделок.",
+    foot_source:"Источник данных", foot_spotify_ready:"Слот для ключа Spotify/Last.fm готов",
+    foot_company:"Компания", foot_about:"О нас", foot_careers:"Карьера", foot_contact:"Контакты",
+    foot_links:"Ссылки", foot_support:"Поддержка", foot_privacy:"Конфиденциальность", foot_for_artists:"Для артистов",
+    foot_tagline:"Настоящие музыкальные данные по всему миру.",
+    player_default_title:"Найдите трек, чтобы начать", preview_note:"30-сек превью",
+    auth_login_title:"С возвращением", auth_login_sub:"Войдите, чтобы сохранять избранное и плейлисты",
+    auth_register_title:"Создайте аккаунт", auth_register_sub:"Присоединяйтесь к SoundVerse",
+    auth_email:"Email", auth_fullname:"Полное имя", auth_password:"Пароль", auth_continue:"Продолжить",
+    auth_signup_link:"Регистрация", auth_login_link:"Войти",
+    follow_btn:"+ Подписаться", popular_songs:"Популярные песни",
+    toast_fav_added:"Добавлено в избранное", toast_fav_removed:"Удалено из избранного",
+    toast_no_preview:"Превью недоступно — выберите другой трек",
+    toast_search_first:"Сначала найдите и выберите трек", toast_mic_unsupported:"Голосовой поиск не поддерживается",
+    toast_mic_permission:"Нужен доступ к микрофону", toast_shuffle_on:"Перемешивание включено", toast_shuffle_off:"Перемешивание выключено",
+    toast_repeat_on:"Повтор включен", toast_repeat_off:"Повтор выключен", toast_theme_light:"Светлая тема", toast_theme_dark:"Темная тема",
+    toast_welcome:"Добро пожаловать в SoundVerse! 🎶 (вход пока только интерфейс — нужен backend)",
+    toast_storefront:"Регион магазина обновлен", toast_lang_set:"Язык изменен: ", coming_soon:"Скоро будет доступно",
+    follow_demo:"Подписка на артиста (демо)", toast_search_error:"Ошибка поиска — проверьте соединение"
+  }
+};
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.uz[key]) || key; }
+function applyLanguage(lang){
+  currentLang = I18N[lang] ? lang : "uz";
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(I18N[currentLang][key] !== undefined) el.innerHTML = I18N[currentLang][key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-ph');
+    if(I18N[currentLang][key] !== undefined) el.setAttribute('placeholder', I18N[currentLang][key]);
+  });
+  document.getElementById('navLang').value = currentLang;
+  document.getElementById('langSelect').value = currentLang;
+  // auth modal title depends on mode, re-sync via last opened mode
+  if(document.getElementById('authModal').dataset.mode === 'register'){
+    document.getElementById('authTitle').textContent = t('auth_register_title');
+    document.getElementById('authSub').textContent = t('auth_register_sub');
+  } else {
+    document.getElementById('authTitle').textContent = t('auth_login_title');
+    document.getElementById('authSub').textContent = t('auth_login_sub');
+  }
+}
+
+/* =========================================================
+   SPOTIFY INTEGRATION (secure)
+   The frontend NEVER holds the client secret. It asks our own
+   serverless function (/api/spotify-token) for a short-lived
+   access token, then calls api.spotify.com directly with it.
+   If that backend isn't deployed (e.g. testing on static hosting
+   without the /api function), every call below fails safely and
+   the app automatically falls back to the iTunes layer beneath it.
+========================================================= */
+const SPOTIFY_TOKEN_ENDPOINT = "/api/spotify-token";
+const SPOTIFY_API = "https://api.spotify.com/v1";
+let _spotifyToken = null;
+let _spotifyTokenExpiry = 0;
+let _spotifyBackendDown = false; // avoid hammering a missing endpoint repeatedly
+
+async function getSpotifyToken(){
+  if(_spotifyBackendDown) return null;
+  if(_spotifyToken && Date.now() < _spotifyTokenExpiry) return _spotifyToken;
+  try{
+    const res = await fetch(SPOTIFY_TOKEN_ENDPOINT);
+    if(!res.ok){ _spotifyBackendDown = true; return null; }
+    const data = await res.json();
+    if(!data.access_token){ _spotifyBackendDown = true; return null; }
+    _spotifyToken = data.access_token;
+    _spotifyTokenExpiry = Date.now() + Math.max(60, (data.expires_in||3600)-60)*1000;
+    return _spotifyToken;
+  }catch(err){ _spotifyBackendDown = true; return null; }
+}
+async function spotifyFetch(path, params={}){
+  const token = await getSpotifyToken();
+  if(!token) return null;
+  const clean = {}; Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!==null && params[k]!=='') clean[k]=params[k]; });
+  const qs = new URLSearchParams(clean).toString();
+  try{
+    const res = await fetch(`${SPOTIFY_API}${path}${qs?'?'+qs:''}`, { headers:{ Authorization:`Bearer ${token}` } });
+    if(!res.ok) return null;
+    return await res.json();
+  }catch(err){ return null; }
+}
+/* ---- map Spotify objects into the same shape the UI already renders ---- */
+function mapSpotifyTrack(tr){
+  if(!tr) return null;
+  return {
+    trackId: String(tr.id),
+    trackName: tr.name,
+    artistName: (tr.artists||[]).map(a=>a.name).join(', '),
+    artworkUrl100: (tr.album && tr.album.images && tr.album.images[0] && tr.album.images[0].url) || "",
+    trackTimeMillis: tr.duration_ms,
+    previewUrl: tr.preview_url || null,
+    externalUrl: (tr.external_urls && tr.external_urls.spotify) || "",
+    collectionName: (tr.album && tr.album.name) || "",
+    primaryGenreName: "",
+    _source: "spotify"
+  };
+}
+function mapSpotifyArtist(a){
+  return {
+    artistId: a.id,
+    artistName: a.name,
+    primaryGenreName: (a.genres && a.genres[0]) || "Artist",
+    artworkUrl100: (a.images && a.images[0] && a.images[0].url) || "",
+    _source: "spotify"
+  };
+}
+function mapSpotifyAlbum(al){
+  return {
+    collectionId: al.id,
+    collectionName: al.name,
+    artistName: (al.artists||[]).map(a=>a.name).join(', '),
+    artworkUrl100: (al.images && al.images[0] && al.images[0].url) || "",
+    _source: "spotify"
+  };
+}
+async function spotifySearch({term, market, limitSongs=20, limitArtists=8, limitAlbums=8}){
+  const max = Math.max(limitSongs, limitArtists, limitAlbums, 1);
+  const data = await spotifyFetch('/search', { q:term, type:'track,artist,album', market, limit: Math.min(max,50) });
+  if(!data) return null;
+  return {
+    songs: ((data.tracks && data.tracks.items) || []).slice(0,limitSongs).map(mapSpotifyTrack).filter(Boolean),
+    artists: ((data.artists && data.artists.items) || []).slice(0,limitArtists).map(mapSpotifyArtist),
+    albums: ((data.albums && data.albums.items) || []).slice(0,limitAlbums).map(mapSpotifyAlbum)
+  };
+}
+async function spotifyArtistTopTracks(artistId, market){
+  const data = await spotifyFetch(`/artists/${artistId}/top-tracks`, { market: market||"US" });
+  if(!data || !data.tracks) return null;
+  return data.tracks.map(mapSpotifyTrack).filter(Boolean);
+}
+async function spotifyArtistAlbums(artistId, market){
+  const data = await spotifyFetch(`/artists/${artistId}/albums`, { market, limit:10, include_groups:'album,single' });
+  if(!data || !data.items) return null;
+  return data.items.map(mapSpotifyAlbum);
+}
+async function spotifyAlbumTracks(albumId){
+  const album = await spotifyFetch(`/albums/${albumId}`, {});
+  if(!album) return null;
+  const items = (album.tracks && album.tracks.items) || [];
+  return items.map(it=>mapSpotifyTrack({...it, album})).filter(Boolean);
+}
+async function spotifyNewReleases(market){
+  const data = await spotifyFetch('/browse/new-releases', { market, limit:14 });
+  if(!data || !data.albums) return null;
+  return data.albums.items.map(mapSpotifyAlbum);
+}
+
+const ITUNES_BASE = "https://itunes.apple.com";
+
+const COUNTRIES = [
+  {code:"us", name:"AQSH", flag:"🇺🇸"}, {code:"uz", name:"O'zbekiston", flag:"🇺🇿"},
+  {code:"gb", name:"Buyuk Britaniya", flag:"🇬🇧"}, {code:"kr", name:"Janubiy Koreya", flag:"🇰🇷"},
+  {code:"jp", name:"Yaponiya", flag:"🇯🇵"}, {code:"tr", name:"Turkiya", flag:"🇹🇷"},
+  {code:"in", name:"Hindiston", flag:"🇮🇳"}, {code:"ru", name:"Rossiya", flag:"🇷🇺"},
+  {code:"br", name:"Braziliya", flag:"🇧🇷"}, {code:"fr", name:"Fransiya", flag:"🇫🇷"},
+  {code:"mx", name:"Meksika", flag:"🇲🇽"}, {code:"de", name:"Germaniya", flag:"🇩🇪"}
+];
+const GENRE_CHIPS = [
+  {n:"Pop",e:"🎤"},{n:"Hip-Hop/Rap",e:"🔥"},{n:"Rock",e:"🎸"},{n:"Electronic",e:"⚡"},
+  {n:"Classical",e:"🎻"},{n:"Jazz",e:"🎷"},{n:"R&B/Soul",e:"💜"},{n:"World",e:"🌍"},
+  {n:"Dance",e:"🪩"},{n:"Alternative",e:"🌀"},{n:"Country",e:"🤠"},{n:"Reggae",e:"🌴"}
+];
+const GENRE_COLORS = ["#a855f7,#ec4899","#f59e0b,#ef4444","#ef4444,#7c2d12","#06b6d4,#3b82f6","#94a3b8,#475569","#b45309,#78350f","#7c3aed,#312e81","#22c55e,#15803d","#d946ef,#7e22ce","#38bdf8,#1e3a8a","#f97316,#7c2d12","#10b981,#064e3b"];
+
+let currentCountry = "us";
+let currentQueue = [];     // active list of track objects being played
+let currentIndex = -1;
+let isShuffled = false, isRepeating = false;
+let favorites = new Set();
+
+const audioEl = document.getElementById('audioEl');
+
+/* ---------- low-level fetch helpers ---------- */
+async function itunesSearch({term, country=currentCountry, entity="song", attribute="", limit=25}){
+  limit = Math.max(1, limit||1);
+  const params = new URLSearchParams({term, country, media:"music", entity, limit});
+  if(attribute) params.set("attribute", attribute);
+  const url = `${ITUNES_BASE}/search?${params.toString()}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Search request failed: "+res.status);
+  const data = await res.json();
+  return data.results || [];
+}
+async function itunesLookup({id, entity=""}){
+  const params = new URLSearchParams({id});
+  if(entity) params.set("entity", entity);
+  const url = `${ITUNES_BASE}/lookup?${params.toString()}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Lookup request failed: "+res.status);
+  const data = await res.json();
+  return data.results || [];
+}
+async function topSongsChart(country=currentCountry, limit=20){
+  const url = `${ITUNES_BASE}/${country}/rss/topsongs/limit=${limit}/json`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Chart request failed: "+res.status);
+  const data = await res.json();
+  const entries = (data.feed && data.feed.entry) || [];
+  const ids = entries.map(e => e.id.attributes['im:id']).filter(Boolean);
+  if(ids.length === 0) return [];
+  const full = await itunesLookup({id: ids.join(",")});
+  // preserve chart order
+  const order = {}; ids.forEach((id,i)=>order[id]=i);
+  return full.filter(t=>t.wrapperType==="track").sort((a,b)=>(order[a.trackId]??999)-(order[b.trackId]??999));
+}
+
+/* ---------- formatting helpers ---------- */
+function fmtTime(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60); const sec=Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; }
+function artwork(t, size=300){
+  if(!t.artworkUrl100) return "";
+  if(t.artworkUrl100.includes("100x100")) return t.artworkUrl100.replace("100x100", `${size}x${size}`); // iTunes
+  return t.artworkUrl100; // Spotify already gives a sized real image URL
+}
+function isFav(id){ return favorites.has(String(id)); }
+
+/* ---------- HYBRID SEARCH: Spotify first, iTunes fallback ---------- */
+async function hybridSearch({term, country=currentCountry, limitSongs=20, limitArtists=8, limitAlbums=8}){
+  try{
+    const market = country ? country.toUpperCase() : undefined;
+    const spResult = await spotifySearch({term, market, limitSongs, limitArtists, limitAlbums});
+    if(spResult && (spResult.songs.length || spResult.artists.length || spResult.albums.length)){
+      return {...spResult, source:'spotify'};
+    }
+  }catch(err){ /* fall through to iTunes */ }
+  const [songs, artistsRes, albums] = await Promise.all([
+    itunesSearch({term, entity:"song", limit:limitSongs, country}),
+    itunesSearch({term, entity:"musicArtist", limit:limitArtists, country}),
+    itunesSearch({term, entity:"album", limit:limitAlbums, country})
+  ]);
+  return { songs, artists: artistsRes, albums, source:'itunes' };
+}
+
+/* ---------- rendering: track rows / cards ---------- */
+function trackRowHTML(t, idx, queueName){
+  const dur = t.trackTimeMillis ? fmtTime(t.trackTimeMillis/1000) : "0:30";
+  return `<div class="track-row" data-tid="${t.trackId}" onclick='playFromQueue("${queueName}", ${idx})'>
+    <div class="rank-num" style="font-size:18px;">${idx+1}</div>
+    <img src="${artwork(t,80)}" loading="lazy" alt="">
+    <div class="tinfo">
+      <div class="tname">${escapeHtml(t.trackName||"Unknown title")}</div>
+      <div class="tartist">${escapeHtml(t.artistName||"Unknown artist")}${t.primaryGenreName?`<span class="genre-tag">${t.primaryGenreName}</span>`:""}</div>
+    </div>
+    <div class="heart-btn ${isFav(t.trackId)?'active':''}" onclick="event.stopPropagation(); toggleFavId('${t.trackId}', this)"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C0.5 8 2 4 6 4c2 0 3.5 1 6 3.5C14.5 5 16 4 18 4c4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+    <div class="tdur">${dur}</div>
+  </div>`;
+}
+function trackCardHTML(t, idx, queueName){
+  return `<div class="card w180" onclick='playFromQueue("${queueName}", ${idx})'>
+    <img class="cover" src="${artwork(t,300)}" loading="lazy" alt="">
+    <h4>${escapeHtml(t.trackName||"Unknown")}</h4><p>${escapeHtml(t.artistName||"")}</p>
+    <button class="play-fab" onclick='event.stopPropagation(); playFromQueue("${queueName}", ${idx})'><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+  </div>`;
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* queues stored globally so card onclick handlers can reference by name */
+const queues = {};
+function setQueue(name, list){ queues[name] = list; }
+function playFromQueue(name, idx){
+  currentQueue = queues[name] || [];
+  currentIndex = idx;
+  playCurrent();
+}
+
+/* ---------- PLAYER ---------- */
+function playCurrent(){
+  const tr = currentQueue[currentIndex];
+  if(!tr){ showToast(t("toast_no_preview")); return; }
+  if(!tr.previewUrl){
+    document.getElementById('pImg').src = artwork(tr,150);
+    document.getElementById('pTitle').textContent = tr.trackName || "Unknown";
+    document.getElementById('pArtist').textContent = tr.artistName || "";
+    if(tr.externalUrl){ showToast(`Bu trek uchun namuna yo'q — Spotify'da ochish mumkin`); }
+    else { showToast(t("toast_no_preview")); }
+    return;
+  }
+  audioEl.src = tr.previewUrl;
+  audioEl.play().catch(()=>showToast(t("toast_search_first")));
+  document.getElementById('pImg').src = artwork(tr,150);
+  document.getElementById('pTitle').textContent = tr.trackName || "Unknown";
+  document.getElementById('pArtist').textContent = tr.artistName || "";
+  document.getElementById('favBtn').classList.toggle('active', isFav(tr.trackId));
+  document.getElementById('favBtn').onclick = ()=>toggleFavId(tr.trackId, document.getElementById('favBtn'));
+  setPlayingIcon(true);
+  showToast(`▶ ${tr.trackName} — ${tr.artistName} (30 soniyalik namuna)`);
+  highlightPlayingRow(tr.trackId);
+}
+function highlightPlayingRow(tid){
+  document.querySelectorAll('.track-row').forEach(r=>r.classList.toggle('playing', r.dataset.tid===String(tid)));
+}
+function setPlayingIcon(playing){
+  const ic = playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  document.getElementById('playIcon').innerHTML = ic;
+  const mini = document.getElementById('playIconMini'); if(mini) mini.innerHTML = ic;
+}
+function togglePlay(){
+  if(!audioEl.src){ showToast(t("toast_search_first")); return; }
+  if(audioEl.paused){ audioEl.play(); setPlayingIcon(true); } else { audioEl.pause(); setPlayingIcon(false); }
+}
+function nextTrack(){
+  if(currentQueue.length===0) return;
+  currentIndex = isShuffled ? Math.floor(Math.random()*currentQueue.length) : (currentIndex+1)%currentQueue.length;
+  playCurrent();
+}
+function prevTrack(){
+  if(currentQueue.length===0) return;
+  currentIndex = (currentIndex-1+currentQueue.length)%currentQueue.length;
+  playCurrent();
+}
+function toggleShuffle(){ isShuffled=!isShuffled; document.getElementById('shuffleBtn').classList.toggle('active', isShuffled); showToast(isShuffled?t("toast_shuffle_on"):t("toast_shuffle_off")); }
+function toggleRepeat(){ isRepeating=!isRepeating; document.getElementById('repeatBtn').classList.toggle('active', isRepeating); showToast(isRepeating?t("toast_repeat_on"):t("toast_repeat_off")); }
+function toggleFav(){ const tr = currentQueue[currentIndex]; if(tr) toggleFavId(tr.trackId, document.getElementById('favBtn')); }
+function toggleFavId(id, el){
+  id = String(id);
+  if(favorites.has(id)){ favorites.delete(id); el.classList.remove('active'); showToast(t('toast_fav_removed')); }
+  else { favorites.add(id); el.classList.add('active'); showToast(t('toast_fav_added')); }
+}
+
+audioEl.addEventListener('timeupdate', ()=>{
+  const pct = audioEl.duration ? (audioEl.currentTime/audioEl.duration)*100 : 0;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('curTime').textContent = fmtTime(audioEl.currentTime);
+  document.getElementById('durTime').textContent = fmtTime(audioEl.duration||30);
+});
+audioEl.addEventListener('ended', ()=>{ if(isRepeating) playCurrent(); else nextTrack(); });
+document.getElementById('progressBar').addEventListener('click', function(e){
+  if(!audioEl.duration) return;
+  const rect=this.getBoundingClientRect(); const pct=(e.clientX-rect.left)/rect.width;
+  audioEl.currentTime = pct*audioEl.duration;
+});
+document.getElementById('volBar').addEventListener('click', function(e){
+  const rect=this.getBoundingClientRect(); const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  audioEl.volume = pct; document.getElementById('volFill').style.width=(pct*100)+'%';
+});
+audioEl.volume = 0.7;
+
+/* ---------- SEARCH ---------- */
+let searchDebounce;
+function wireSearchInput(inputEl, isHero){
+  inputEl.addEventListener('input', ()=>{
+    clearTimeout(searchDebounce);
+    const q = inputEl.value.trim();
+    if(!q){ if(isHero){} else { document.getElementById('searchResults').style.display='none'; } return; }
+    searchDebounce = setTimeout(()=>runSearch(q, isHero), 420);
+  });
+  inputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ runSearch(inputEl.value.trim(), isHero, true); }});
+}
+function quickSearch(q){ document.getElementById('heroSearchInput').value=q; runSearch(q, true, true); }
+
+async function runSearch(q, isHero, fullPage){
+  if(!q) return;
+  if(!isHero){
+    const box = document.getElementById('searchResults');
+    box.style.display='block';
+    box.innerHTML = `<div class="state-msg">Qidirilmoqda…</div>`;
+  }
+  try{
+    const result = await hybridSearch({term:q, limitSongs: isHero?20:8, limitArtists:8, limitAlbums:8});
+    const {songs, artists: artistsRes, albums} = result;
+    if(!isHero){
+      renderQuickResults(songs, artistsRes, albums, q);
+    }
+    if(isHero || fullPage){
+      document.getElementById('searchSection').style.display='block';
+      document.getElementById('searchHeading').textContent = `"${q}" bo'yicha natijalar`;
+      document.getElementById('searchSub').textContent = `${songs.length} ta qo'shiq topildi · ${result.source==='spotify'?'Spotify':'iTunes'} jonli ma'lumoti`;
+      setQueue('search', songs);
+      const list = document.getElementById('searchTracksList');
+      list.innerHTML = songs.length ? songs.map((t,i)=>trackRowHTML(t,i,'search')).join('') : `<div class="state-msg">Qo'shiq topilmadi. Boshqa so'z bilan urinib ko'ring.</div>`;
+      document.getElementById('searchArtistsRow').innerHTML = artistsRes.length ? artistsRes.map(a=>`
+        <div class="card artist w160" onclick='openArtist(${JSON.stringify(a.artistName)}, ${JSON.stringify(String(a.artistId))}, ${JSON.stringify(a._source||"itunes")})'>
+          <img class="cover" src="${a.artworkUrl100 ? a.artworkUrl100 : `https://picsum.photos/seed/${encodeURIComponent(a.artistName)}/240`}" alt="">
+          <h4>${escapeHtml(a.artistName)}</h4><p>${escapeHtml(a.primaryGenreName||"Artist")}</p>
+        </div>`).join('') : `<div class="state-msg">San'atkor topilmadi</div>`;
+      document.getElementById('searchAlbumsRow').innerHTML = albums.length ? albums.map(al=>`
+        <div class="card w180" onclick='openAlbum(${JSON.stringify(String(al.collectionId))}, ${JSON.stringify(al._source||"itunes")})'>
+          <img class="cover" src="${artwork(al,300)}" alt="">
+          <h4>${escapeHtml(al.collectionName)}</h4><p>${escapeHtml(al.artistName)}</p>
+        </div>`).join('') : `<div class="state-msg">Albom topilmadi</div>`;
+      document.getElementById('searchSection').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }catch(err){
+    console.error(err);
+    if(!isHero) document.getElementById('searchResults').innerHTML = `<div class="state-msg error">Qidiruvda xatolik — tarmoq yoki API muammosi. Qaytadan urinib ko'ring.</div>`;
+    showToast(t("toast_search_error"));
+  }
+}
+function renderQuickResults(songs, artistsRes, albums, q){
+  const box = document.getElementById('searchResults');
+  if(songs.length===0 && artistsRes.length===0 && albums.length===0){
+    box.innerHTML = `<div class="state-msg">"${escapeHtml(q)}" bo'yicha hech narsa topilmadi</div>`; return;
+  }
+  setQueue('quick', songs);
+  box.innerHTML =
+    songs.slice(0,5).map((t,i)=>`<div class="track-row" onclick='playFromQueue("quick", ${i}); document.getElementById("searchResults").style.display="none";'>
+      <img src="${artwork(t,80)}"><div class="tinfo"><div class="tname">${escapeHtml(t.trackName)}</div><div class="tartist">${escapeHtml(t.artistName)}</div></div></div>`).join('') +
+    artistsRes.slice(0,3).map(a=>`<div class="track-row" onclick='openArtist(${JSON.stringify(a.artistName)}, ${JSON.stringify(String(a.artistId))}, ${JSON.stringify(a._source||"itunes")}); document.getElementById("searchResults").style.display="none";'>
+      <img src="${a.artworkUrl100 ? a.artworkUrl100 : `https://picsum.photos/seed/${encodeURIComponent(a.artistName)}/80`}" style="border-radius:50%;"><div class="tinfo"><div class="tname">${escapeHtml(a.artistName)}</div><div class="tartist">Artist</div></div></div>`).join('') +
+    albums.slice(0,3).map(al=>`<div class="track-row" onclick='openAlbum(${JSON.stringify(String(al.collectionId))}, ${JSON.stringify(al._source||"itunes")}); document.getElementById("searchResults").style.display="none";'>
+      <img src="${artwork(al,80)}"><div class="tinfo"><div class="tname">${escapeHtml(al.collectionName)}</div><div class="tartist">Albom · ${escapeHtml(al.artistName)}</div></div></div>`).join('');
+}
+document.addEventListener('click', (e)=>{ if(!e.target.closest('.search-wrap')) document.getElementById('searchResults').style.display='none'; });
+
+/* Voice search (Web Speech API — real browser mic input) */
+function wireMic(btnEl, inputEl, isHero){
+  btnEl.addEventListener('click', ()=>{
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ showToast(t('toast_mic_unsupported')); return; }
+    const rec = new SR(); rec.lang='en-US';
+    rec.onstart=()=>btnEl.classList.add('listening');
+    rec.onresult=(e)=>{ inputEl.value = e.results[0][0].transcript; runSearch(inputEl.value, isHero, true); };
+    rec.onend=()=>btnEl.classList.remove('listening');
+    rec.onerror=()=>{ btnEl.classList.remove('listening'); showToast(t('toast_mic_permission')); };
+    try{ rec.start(); }catch(err){ showToast(t('toast_mic_unsupported')); }
+  });
+}
+wireSearchInput(document.getElementById('searchInput'), false);
+wireSearchInput(document.getElementById('heroSearchInput'), true);
+wireMic(document.getElementById('micBtn'), document.getElementById('searchInput'), false);
+wireMic(document.getElementById('heroMicBtn'), document.getElementById('heroSearchInput'), true);
+
+/* ---------- ARTIST DRAWER ---------- */
+async function openArtist(name, artistId, source){
+  document.getElementById('drawerBg').classList.add('show');
+  document.getElementById('artistDrawer').classList.add('show');
+  document.getElementById('adName').textContent = name;
+  document.getElementById('adGenre').textContent = t('loading');
+  document.getElementById('adImg').src = `https://picsum.photos/seed/${encodeURIComponent(name)}/600`;
+  document.getElementById('adSongs').innerHTML = `<div class="state-msg">Qo'shiqlar yuklanmoqda…</div>`;
+  document.getElementById('adAlbums').innerHTML = "";
+  try{
+    let songs = [], albums = [];
+    if(source === 'spotify' && artistId){
+      songs = await spotifyArtistTopTracks(artistId, currentCountry ? currentCountry.toUpperCase() : "US") || [];
+      albums = await spotifyArtistAlbums(artistId, currentCountry ? currentCountry.toUpperCase() : undefined) || [];
+      if(songs[0] && songs[0].artworkUrl100) document.getElementById('adImg').src = songs[0].artworkUrl100;
+    }
+    if(songs.length === 0){
+      // fallback to iTunes search by artist name (covers both: itunes-source artists, and spotify artists with no top-tracks for this market)
+      songs = await itunesSearch({term:name, entity:"song", attribute:"artistTerm", limit:10});
+      albums = await itunesSearch({term:name, entity:"album", attribute:"artistTerm", limit:10});
+    }
+    document.getElementById('adGenre').textContent = (songs[0] && songs[0].primaryGenreName) || "Artist";
+    setQueue('artist', songs);
+    document.getElementById('adSongs').innerHTML = songs.length ? songs.map((t,i)=>trackRowHTML(t,i,'artist')).join('') : `<div class="state-msg">Qo'shiq topilmadi</div>`;
+    document.getElementById('adAlbums').innerHTML = albums.length ? albums.map(al=>`
+      <div class="al-item" onclick="closeArtist(); openAlbum(${JSON.stringify(String(al.collectionId))}, ${JSON.stringify(al._source||"itunes")})"><img src="${artwork(al,200)}"><span>${escapeHtml(al.collectionName)}</span></div>`).join('') : `<div class="state-msg">Albom topilmadi</div>`;
+  }catch(err){
+    document.getElementById('adSongs').innerHTML = `<div class="state-msg error">San'atkor ma'lumotini yuklab bo'lmadi</div>`;
+  }
+}
+function closeArtist(){ document.getElementById('drawerBg').classList.remove('show'); document.getElementById('artistDrawer').classList.remove('show'); }
+
+/* ---------- ALBUM ---------- */
+async function openAlbum(collectionId, source){
+  try{
+    let songTracks = [], album = null;
+    if(source === 'spotify'){
+      songTracks = await spotifyAlbumTracks(collectionId) || [];
+      if(songTracks.length) album = { collectionName: songTracks[0].collectionName, artistName: songTracks[0].artistName, artworkUrl100: songTracks[0].artworkUrl100 };
+    }
+    if(songTracks.length === 0){
+      const tracks = await itunesLookup({id: collectionId, entity:"song"});
+      songTracks = tracks.filter(tr=>tr.wrapperType==="track");
+      album = tracks.find(tr=>tr.wrapperType==="collection") || songTracks[0];
+    }
+    if(songTracks.length===0){ showToast(t('toast_no_preview')); return; }
+    setQueue('album', songTracks);
+    document.getElementById('drawerBg').classList.add('show');
+    document.getElementById('artistDrawer').classList.add('show');
+    document.getElementById('adImg').src = artwork(album,600);
+    document.getElementById('adName').textContent = (album && album.collectionName) || "Album";
+    document.getElementById('adGenre').textContent = `${(album && album.artistName)||""} · ${songTracks.length} ta qo'shiq`;
+    document.getElementById('adSongs').innerHTML = songTracks.map((t,i)=>trackRowHTML(t,i,'album')).join('');
+    document.getElementById('adAlbums').innerHTML = "";
+  }catch(err){ showToast(t('toast_search_error')); }
+}
+
+/* ---------- TOP CHARTS ----------
+   Note: Spotify's public Web API has no reliable cross-account "charts"
+   endpoint (featured-playlists/charts were deprecated Nov 2024), so this
+   stays on the iTunes Top Songs RSS feed, which is free, live, and stable. */
+async function loadCharts(country){
+  const el = document.getElementById('chartsList');
+  el.innerHTML = `<div class="state-msg">${country.toUpperCase()} uchun jonli chart yuklanmoqda…</div>`;
+  try{
+    const list = await topSongsChart(country, 20);
+    if(list.length===0){ el.innerHTML = `<div class="state-msg">Bu mintaqa uchun chart ma'lumoti yo'q — boshqa davlatni tanlang.</div>`; return; }
+    setQueue('charts', list);
+    el.innerHTML = list.map((t,i)=>trackRowHTML(t,i,'charts')).join('');
+  }catch(err){
+    console.error(err);
+    el.innerHTML = `<div class="state-msg error">Bu mintaqa uchun chart mavjud emas. Boshqa davlatni tanlab ko'ring.</div>`;
+  }
+}
+
+/* ---------- UZBEK ROW / TRENDING (Spotify first, iTunes fallback) ---------- */
+async function loadUzbek(){
+  const el = document.getElementById('uzbekRow');
+  try{
+    let result = await hybridSearch({term:"Uzbek pop", country:"uz", limitSongs:14, limitArtists:0, limitAlbums:0});
+    if(result.songs.length===0) result = await hybridSearch({term:"o'zbek qo'shiqlari", limitSongs:14, limitArtists:0, limitAlbums:0});
+    if(result.songs.length===0){ el.innerHTML = `<div class="state-msg">Hozircha o'zbek qo'shiqlari topilmadi — "Yulduz Usmonova" yoki "Sevara Nazarkhan" deb qidirib ko'ring.</div>`; return; }
+    setQueue('uzbek', result.songs);
+    el.innerHTML = result.songs.map((t,i)=>trackCardHTML(t,i,'uzbek')).join('');
+  }catch(err){ el.innerHTML = `<div class="state-msg error">O'zbek musiqa lentasini yuklab bo'lmadi.</div>`; }
+}
+async function loadTrending(){
+  const el = document.getElementById('trendingRow');
+  try{
+    const terms = ["top 2026 hits","viral pop","new hip hop"];
+    const term = terms[Math.floor(Math.random()*terms.length)];
+    const result = await hybridSearch({term, limitSongs:14, limitArtists:0, limitAlbums:0});
+    setQueue('trending', result.songs);
+    el.innerHTML = result.songs.length ? result.songs.map((t,i)=>trackCardHTML(t,i,'trending')).join('') : `<div class="state-msg">Hozircha trend ma'lumoti yo'q.</div>`;
+  }catch(err){ el.innerHTML = `<div class="state-msg error">Trend lentasini yuklab bo'lmadi.</div>`; }
+}
+
+/* ---------- GENRES / COUNTRIES grids ---------- */
+function renderGenreGrid(){
+  document.getElementById('genreGrid').innerHTML = GENRE_CHIPS.map((g,i)=>`
+    <div class="genre-card" style="background:linear-gradient(135deg,${GENRE_COLORS[i].split(',')[0]},${GENRE_COLORS[i].split(',')[1]});" onclick="genreSearch('${g.n.replace("'","\\'")}')">
+      <span class="emoji">${g.e}</span><span>${g.n}</span>
+    </div>`).join('');
+}
+function genreSearch(name){ document.getElementById('heroSearchInput').value = name; runSearch(name, true, true); showToast(`${name} — haqiqiy qo'shiqlar yuklanmoqda…`); }
+function renderCountryGrid(){
+  document.getElementById('countryGrid').innerHTML = COUNTRIES.map(c=>`
+    <div class="country-card" onclick="countrySearch('${c.code}','${c.name.replace("'","\\'")}')">
+      <div class="flag">${c.flag}</div><div><h4>${c.name}</h4><p>Jonli katalog · ${c.code.toUpperCase()}</p></div>
+    </div>`).join('');
+}
+async function countrySearch(code, name){
+  currentCountry = code;
+  document.getElementById('navCountry').value = code;
+  document.getElementById('chartCountry').value = code;
+  showToast(t('toast_storefront') + ': ' + name);
+  loadCharts(code);
+  document.getElementById('searchSection').style.display='block';
+  document.getElementById('searchHeading').textContent = `Top qo'shiqlar · ${name}`;
+  document.getElementById('searchTracksList').innerHTML = `<div class="state-msg">${t('loading')}</div>`;
+  try{
+    const result = await hybridSearch({term:"top hits", country:code, limitSongs:16, limitArtists:0, limitAlbums:0});
+    setQueue('search', result.songs);
+    document.getElementById('searchSub').textContent = `${result.songs.length} ta qo'shiq topildi · ${name} (${result.source==='spotify'?'Spotify':'iTunes'})`;
+    document.getElementById('searchTracksList').innerHTML = result.songs.length ? result.songs.map((t,i)=>trackRowHTML(t,i,'search')).join('') : `<div class="state-msg">Bu mintaqa uchun ma'lumot topilmadi.</div>`;
+    document.getElementById('searchArtistsRow').innerHTML=""; document.getElementById('searchAlbumsRow').innerHTML="";
+    document.getElementById('searchSection').scrollIntoView({behavior:'smooth'});
+  }catch(e){ document.getElementById('searchTracksList').innerHTML = `<div class="state-msg error">Yuklashda xatolik yuz berdi.</div>`; }
+}
+
+/* ---------- selects ---------- */
+function fillCountrySelects(){
+  const opts = COUNTRIES.map(c=>`<option value="${c.code}">${c.flag} ${c.name}</option>`).join('');
+  document.getElementById('navCountry').innerHTML = opts;
+  document.getElementById('chartCountry').innerHTML = opts;
+  document.getElementById('navCountry').value = "us";
+  document.getElementById('chartCountry').value = "us";
+}
+document.getElementById('navCountry').addEventListener('change', (e)=>{ currentCountry = e.target.value; document.getElementById('chartCountry').value = e.target.value; loadCharts(e.target.value); showToast(t('toast_storefront')); });
+document.getElementById('chartCountry').addEventListener('change', (e)=>{ loadCharts(e.target.value); });
+
+/* ---------- THEME / AUTH / TOAST ---------- */
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const body=document.body; const next = body.getAttribute('data-theme')==='dark'?'light':'dark';
+  body.setAttribute('data-theme', next); showToast(next==='light'?t('toast_theme_light'):t('toast_theme_dark'));
+});
+function openAuth(mode){
+  document.getElementById('authModal').classList.add('show');
+  document.getElementById('authModal').dataset.mode = mode;
+  if(mode==='login'){
+    document.getElementById('authTitle').textContent=t('auth_login_title');
+    document.getElementById('authSub').textContent=t('auth_login_sub');
+    document.getElementById('nameField').style.display='none';
+    document.getElementById('authSwitch').innerHTML=`Hisobingiz yo'qmi? <b onclick="openAuth('register')">${t('auth_signup_link')}</b>`;
+  } else {
+    document.getElementById('authTitle').textContent=t('auth_register_title');
+    document.getElementById('authSub').textContent=t('auth_register_sub');
+    document.getElementById('nameField').style.display='block';
+    document.getElementById('authSwitch').innerHTML=`Hisobingiz bormi? <b onclick="openAuth('login')">${t('auth_login_link')}</b>`;
+  }
+}
+function closeAuth(){ document.getElementById('authModal').classList.remove('show'); }
+function submitAuth(){ closeAuth(); showToast(t('toast_welcome')); }
+let toastTimer;
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
+document.getElementById('hamburger').addEventListener('click', ()=>showToast(`${t('nav_home')} · ${t('nav_charts')} · ${t('nav_genres')} · ${t('nav_countries')}`));
+function syncLang(lang){ applyLanguage(lang); showToast(t('toast_lang_set') + (lang==='uz'?"O'zbek":lang==='ru'?"Русский":"English")); }
+document.getElementById('navLang').addEventListener('change', (e)=>syncLang(e.target.value));
+document.getElementById('langSelect').addEventListener('change', (e)=>syncLang(e.target.value));
+
+/* ---------- INIT ---------- */
+applyLanguage('uz');
+fillCountrySelects();
+renderGenreGrid();
+renderCountryGrid();
+loadCharts("us");
+loadUzbek();
+loadTrending();
+</script>
+</body>
+</html>
