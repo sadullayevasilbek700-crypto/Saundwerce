@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.js": {
+    "api/spotify-token.js": {
       "runtime": "nodejs20.x"
     }
   }
